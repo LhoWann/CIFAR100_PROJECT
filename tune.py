@@ -5,23 +5,22 @@ import torch
 from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
-
 from src.dataset import Cifar100NPZDataset, get_transforms
 from src.model import LitModel
-
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
+
+warnings.filterwarnings("ignore")
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='data/')
     parser.add_argument('--n_trials', type=int, default=20)
     parser.add_argument('--storage', type=str, default='sqlite:///db.sqlite3')
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--batch_size', type=int, default=64)
     return parser.parse_args()
 
 class Objective:
-    def __init__(self, data_path, batch_size=16):
+    def __init__(self, data_path, batch_size=64):
         self.data_path = data_path
         self.img_size = 224
         self.batch_size = batch_size
@@ -66,15 +65,13 @@ class Objective:
 
         n_gpus = torch.cuda.device_count()
         strategy = 'ddp' if n_gpus > 1 else 'auto'
-        sync_bn = True if n_gpus > 1 else False
-
+        
         trainer = pl.Trainer(
             max_epochs=5,
             accelerator="gpu",
             devices=n_gpus,
             strategy=strategy,
             precision="16-mixed",
-            sync_batchnorm=sync_bn,
             enable_checkpointing=False,
             logger=False,
             callbacks=[PyTorchLightningPruningCallback(trial, monitor="val_acc")]
