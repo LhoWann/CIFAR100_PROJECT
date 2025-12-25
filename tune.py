@@ -17,13 +17,14 @@ def parse_args():
     parser.add_argument('--data_path', type=str, default='data/')
     parser.add_argument('--n_trials', type=int, default=20)
     parser.add_argument('--storage', type=str, default='sqlite:///db.sqlite3')
+    parser.add_argument('--batch_size', type=int, default=16)
     return parser.parse_args()
 
 class Objective:
-    def __init__(self, data_path):
+    def __init__(self, data_path, batch_size=16):
         self.data_path = data_path
         self.img_size = 224
-        self.batch_size = 16
+        self.batch_size = batch_size
         
         train_transform, _ = get_transforms(self.img_size)
         full_path = f"{data_path}/train_data.npz"
