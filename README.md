@@ -20,6 +20,8 @@ Pastikan struktur folder Anda seperti berikut agar import berjalan lancar:
 ```text
 .
 ├── data/                   # Folder dataset (.npz files)
+    ├── train.npz
+    ├── test.npz                  
 ├── src/
 │   ├── __init__.py
 │   ├── dataset.py          # Class Dataset dan Transformasi
@@ -89,4 +91,5 @@ Berikut adalah daftar argumen yang dapat digunakan pada `train.py`:
 
 * **Mixed Precision** : Secara default menggunakan `16-mixed`. Pada `model.py`, *gradient clipping* telah disesuaikan menggunakan `self.clip_gradients` agar kompatibel dengan  *gradient scaler* .
 * **SAM Optimizer** : Implementasi SAM memerlukan dua langkah (first step & second step) yang dilakukan secara manual di dalam `training_step`. Automatic optimization dimatikan (`self.automatic_optimization = False`).
+
 
