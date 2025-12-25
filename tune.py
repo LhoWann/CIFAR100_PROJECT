@@ -71,7 +71,7 @@ class Objective:
             accelerator="gpu",
             devices=n_gpus,
             strategy=strategy,
-            precision="16-mixed",
+            precision="32-true",
             sync_batchnorm=sync_bn, 
             enable_checkpointing=False,
             logger=False,

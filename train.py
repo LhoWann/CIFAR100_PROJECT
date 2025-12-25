@@ -84,7 +84,7 @@ def main():
         accelerator="gpu",
         devices=n_gpus,
         strategy=strategy,
-        precision="16-mixed",
+        precision="32-true",
         sync_batchnorm=sync_bn,
         accumulate_grad_batches=args.accum_steps,
         callbacks=[checkpoint_callback, LearningRateMonitor(logging_interval='step')]
