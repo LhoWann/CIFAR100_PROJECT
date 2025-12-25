@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=5e-5)
     parser.add_argument('--weight_decay', type=float, default=0.05)
     parser.add_argument('--rho', type=float, default=0.05)
-    parser.add_argument('--accum_steps', type=int, default=42)
+    parser.add_argument('--accum_steps', type=int, default=1) 
     parser.add_argument('--seed', type=int, default=42)
     
     return parser.parse_args()
@@ -75,11 +75,17 @@ def main():
         save_top_k=1
     )
 
+    n_gpus = torch.cuda.device_count()
+    strategy = 'ddp' if n_gpus > 1 else 'auto'
+    sync_bn = True if n_gpus > 1 else False
+
     trainer = pl.Trainer(
         max_epochs=args.epochs,
         accelerator="gpu",
-        devices=1,
-        precision="32-true",
+        devices=n_gpus,
+        strategy=strategy,
+        precision="16-mixed",
+        sync_batchnorm=sync_bn,
         accumulate_grad_batches=args.accum_steps,
         callbacks=[checkpoint_callback, LearningRateMonitor(logging_interval='step')]
     )
@@ -101,10 +107,11 @@ def main():
                 imgs, ids = batch
                 imgs = imgs.cuda()
                 
-                logits = best_model(imgs)
-                logits_flipped = best_model(torch.flip(imgs, dims=[3]))
-                final_logits = (logits + logits_flipped) / 2.0
-                preds = torch.argmax(final_logits, dim=1)
+                with torch.cuda.amp.autocast():
+                    logits = best_model(imgs)
+                    logits_flipped = best_model(torch.flip(imgs, dims=[3]))
+                    final_logits = (logits + logits_flipped) / 2.0
+                    preds = torch.argmax(final_logits, dim=1)
                 
                 all_ids.extend(ids.numpy())
                 all_preds.extend(preds.cpu().numpy())

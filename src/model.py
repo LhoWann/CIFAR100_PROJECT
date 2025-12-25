@@ -30,7 +30,7 @@ class LitModel(pl.LightningModule):
         loss = self.criterion(logits, y)
         self.manual_backward(loss)
         
-        torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
+        self.clip_gradients(opt, gradient_clip_val=1.0, gradient_clip_algorithm="norm")
         
         opt.first_step(zero_grad=True)
         
@@ -38,7 +38,7 @@ class LitModel(pl.LightningModule):
         loss_2 = self.criterion(logits_2, y)
         self.manual_backward(loss_2)
         
-        torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
+        self.clip_gradients(opt, gradient_clip_val=1.0, gradient_clip_algorithm="norm")
         
         opt.second_step(zero_grad=True)
         

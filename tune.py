@@ -63,11 +63,17 @@ class Objective:
             pin_memory=True
         )
 
+        n_gpus = torch.cuda.device_count()
+        strategy = 'ddp' if n_gpus > 1 else 'auto'
+        sync_bn = True if n_gpus > 1 else False
+
         trainer = pl.Trainer(
             max_epochs=5,
             accelerator="gpu",
-            devices=1,
-            precision="32-true",
+            devices=n_gpus,
+            strategy=strategy,
+            precision="16-mixed",
+            sync_batchnorm=sync_bn,
             enable_checkpointing=False,
             logger=False,
             callbacks=[PyTorchLightningPruningCallback(trial, monitor="val_acc")]
