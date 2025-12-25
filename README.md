@@ -1,6 +1,6 @@
 # CIFAR-100 Image Classification dengan ConvNeXt V2 & SAM
 
-Proyek ini mengimplementasikan pipeline klasifikasi gambar untuk dataset CIFAR-100 menggunakan model ConvNeXt V2 (melalui `timm`). Pelatihan dioptimalkan menggunakan *Sharpness-Aware Minimization* (SAM) dan dikelola dengan PyTorch Lightning. Kode ini mendukung pelatihan Single-GPU dan Multi-GPU (DDP) serta *Mixed Precision* (16-mixed) secara otomatis.
+Proyek ini mengimplementasikan pipeline klasifikasi gambar untuk dataset CIFAR-100 menggunakan model ConvNeXt V2 (melalui `timm`). Pelatihan dioptimalkan menggunakan *Sharpness-Aware Minimization* (SAM) dan dikelola dengan PyTorch Lightning. Kode ini mendukung pelatihan Single-GPU dan Multi-GPU (DDP).
 
 ## Fitur Utama
 
@@ -9,7 +9,6 @@ Proyek ini mengimplementasikan pipeline klasifikasi gambar untuk dataset CIFAR-1
 * **Engine**: PyTorch Lightning.
 * **Akselerasi**:
   * Mendukung Multi-GPU (Strategy: DDP) dan Single-GPU secara otomatis.
-  * Mendukung *Mixed Precision* (16-mixed) untuk efisiensi memori dan kecepatan.
 * **Tuning**: Hyperparameter tuning menggunakan Optuna.
 * **Augmentasi**: RandAugment, RandomHorizontalFlip, Mixup (jika diaktifkan di model/loss).
 
@@ -21,7 +20,7 @@ Pastikan struktur folder Anda seperti berikut agar import berjalan lancar:
 .
 ├── data/                   # Folder dataset (.npz files)
     ├── train.npz
-    ├── test.npz                  
+    ├── test.npz          
 ├── src/
 │   ├── __init__.py
 │   ├── dataset.py          # Class Dataset dan Transformasi
@@ -68,7 +67,6 @@ Jalankan `tune.py` untuk mencari parameter terbaik (`lr`, `weight_decay`, `rho`)
 
 `python tune.py --n_trials 50 --storage sqlite:///db.sqlite3`
 
-
 ## Argumen
 
 Berikut adalah daftar argumen yang dapat digunakan pada `train.py`:
@@ -86,10 +84,3 @@ Berikut adalah daftar argumen yang dapat digunakan pada `train.py`:
 | `--num_workers`  | `2`                  | Jumlah worker dataloader                      |
 | `--seed`         | `42`                 | Seed untuk reproduktifitas                    |
 | `--data_path`    | `data/`              | Path ke folder dataset                        |
-
-## Catatan Teknis
-
-* **Mixed Precision** : Secara default menggunakan `16-mixed`. Pada `model.py`, *gradient clipping* telah disesuaikan menggunakan `self.clip_gradients` agar kompatibel dengan  *gradient scaler* .
-* **SAM Optimizer** : Implementasi SAM memerlukan dua langkah (first step & second step) yang dilakukan secara manual di dalam `training_step`. Automatic optimization dimatikan (`self.automatic_optimization = False`).
-
-
