@@ -4,7 +4,6 @@ from optuna.integration import PyTorchLightningPruningCallback
 import torch
 from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor
 from src.dataset import Cifar100NPZDataset, get_transforms
 from src.model import LitModel
 import warnings
@@ -16,14 +15,14 @@ def parse_args():
     parser.add_argument('--data_path', type=str, default='data/')
     parser.add_argument('--n_trials', type=int, default=20)
     parser.add_argument('--storage', type=str, default='sqlite:///db.sqlite3')
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=64) 
     return parser.parse_args()
 
 class Objective:
-    def __init__(self, data_path, batch_size=64):
+    def __init__(self, data_path, batch_size): 
         self.data_path = data_path
         self.img_size = 224
-        self.batch_size = batch_size
+        self.batch_size = batch_size 
         
         train_transform, _ = get_transforms(self.img_size)
         full_path = f"{data_path}/train_data.npz"
@@ -65,13 +64,15 @@ class Objective:
 
         n_gpus = torch.cuda.device_count()
         strategy = 'ddp' if n_gpus > 1 else 'auto'
-        
+        sync_bn = True if n_gpus > 1 else False 
+
         trainer = pl.Trainer(
             max_epochs=5,
             accelerator="gpu",
             devices=n_gpus,
             strategy=strategy,
             precision="16-mixed",
+            sync_batchnorm=sync_bn, 
             enable_checkpointing=False,
             logger=False,
             callbacks=[PyTorchLightningPruningCallback(trial, monitor="val_acc")]
@@ -83,7 +84,8 @@ class Objective:
 
 if __name__ == "__main__":
     args = parse_args()
-    objective = Objective(args.data_path)
+    
+    objective = Objective(args.data_path, batch_size=args.batch_size) 
     
     study = optuna.create_study(
         direction="maximize", 
