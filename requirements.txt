@@ -1,0 +1,9 @@
+torch
+torchvision
+pytorch-lightning
+transformers
+pandas
+numpy
+timm
+optuna
+optuna-integration[pytorch_lightning]
